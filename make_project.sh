@@ -6,9 +6,19 @@ COCOS2DX_APP_DIR=$COCOS2DX_DIR/cocos2dx/platform/android/java
 CREATOR_SCRIPT_DIR=$COCOS2DX_DIR/tools/project-creator
 SCRIPT=$CREATOR_SCRIPT_DIR/create_project.py
 
-PROJECT=
+usage(){
+cat << EOF
+usage: $0 [options]
+
+OPTIONS:
+-p	project name
+-t	android target(et. android-10)
+-h	this help
+EOF
+}
+
 TARGET=android-10
-while getopts "p:t:" OPTION; do
+while getopts "p:t:h" OPTION; do
     case "$OPTION" in
         p)
             PROJECT=$(echo $OPTARG)
@@ -16,10 +26,16 @@ while getopts "p:t:" OPTION; do
         t)
             TARGET=$(echo $OPTARG)
             ;;
+        h)
+            usage
+            exit 0
+            ;;
         ?)
             ;;
     esac
 done
+
+if [ -z "${PROJECT+aaa}" ]; then usage;exit 1;fi
 
 cd $CREATOR_SCRIPT_DIR
 PACKAGE="game.nbgate.$PROJECT"
@@ -42,7 +58,7 @@ sed -i 's/..\/..\/..\/cocos2dx/..\/..\/cocos2d-x\/cocos2dx/' $APPDIR/project.pro
 grep '../../cocos2d-x' $APPDIR/project.properties > /dev/null
 if [ $? -ne 0 ]; then echo "error: rewrite android.library.reference.1 failed in file project.properties.";exit 1;fi
 
-if [ -f $WORKDIR/tools/build.sh.android ]; then cp $WORKDIR/tools/build.sh.android $PROJECT_DIR/build.sh
+if [ -f $WORKDIR/tools/build.sh.android ]; then cp $WORKDIR/tools/build.sh.android $APPDIR/build.sh;fi
 
 android update project -n $PROJECT -p $APPDIR -t $TARGET
 
